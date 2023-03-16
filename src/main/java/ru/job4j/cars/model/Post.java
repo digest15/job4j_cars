@@ -8,6 +8,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
@@ -30,4 +32,8 @@ public class Post {
     @ManyToOne
     @JoinColumn(name = "auto_user_id")
     private User user;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JoinColumn(name = "price_history_id")
+    private List<PriceHistory> priceHistories = new ArrayList<>();
 }

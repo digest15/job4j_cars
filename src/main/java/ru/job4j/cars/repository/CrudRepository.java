@@ -19,7 +19,8 @@ public class CrudRepository {
     private final SessionFactory sf;
 
     public boolean run(Function<Session, Boolean> command) {
-        return tx(command);
+        var isDelete = tx(command);
+        return isDelete != null && isDelete;
     }
 
     public boolean run(String query, Map<String, Object> args) {
