@@ -16,6 +16,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static java.time.LocalDateTime.now;
 import static org.assertj.core.api.Assertions.*;
@@ -57,7 +58,14 @@ class PostRepositoryHbnTest {
         var user1 = userRepository.add(new User(0, "admin", "123")).get();
         var creationDate = now().truncatedTo(ChronoUnit.MINUTES);
         var priceHistory = new PriceHistory(0, 0, 1, creationDate);
-        Optional<Post> post = postRepository.add(new Post(0, "Post1", creationDate, user1, List.of(priceHistory)));
+        Optional<Post> post = postRepository.add(Post.builder()
+                .description("Post1")
+                .creationDate(creationDate)
+                .user(user1)
+                .priceHistories(List.of(priceHistory))
+                .subscribers(Set.of(user1))
+                .build()
+        );
 
         assertThat(post).isPresent();
     }
@@ -67,13 +75,21 @@ class PostRepositoryHbnTest {
         var user1 = userRepository.add(new User(0, "admin", "123")).get();
         var creationDate = now().truncatedTo(ChronoUnit.MINUTES);
         var priceHistory = new PriceHistory(0, 0, 1, creationDate);
-        Post post = postRepository.add(new Post(0, "Post1", creationDate, user1, List.of(priceHistory))).get();
-        Optional<Post> findTask = postRepository.findById(post.getId());
+        Optional<Post> post = postRepository.add(Post.builder()
+                .description("Post1")
+                .creationDate(creationDate)
+                .user(user1)
+                .priceHistories(List.of(priceHistory))
+                .subscribers(Set.of(user1))
+                .build()
+        );
+        Optional<Post> findPost = postRepository.findById(post.get().getId());
 
-        assertThat(findTask.isPresent()).isTrue();
-        assertThat(post).isEqualTo(findTask.get());
-        assertThat(findTask.get().getUser()).isEqualTo(user1);
-        assertThat(findTask.get().getPriceHistories()).asList().contains(priceHistory);
+        assertThat(findPost.isPresent()).isTrue();
+        assertThat(post).isEqualTo(findPost);
+        assertThat(findPost.get().getUser()).isEqualTo(user1);
+        assertThat(findPost.get().getPriceHistories()).asList().contains(priceHistory);
+        assertThat(findPost.get().getSubscribers()).isEqualTo(Set.of(user1));
     }
 
     @Test
@@ -81,9 +97,31 @@ class PostRepositoryHbnTest {
         var user1 = userRepository.add(new User(0, "admin", "123")).get();
         var creationDate = now().truncatedTo(ChronoUnit.MINUTES);
         var priceHistories = List.of(new PriceHistory(0, 0, 1, creationDate));
-        Post post1 = postRepository.add(new Post(0, "Post1", creationDate, user1, priceHistories)).get();
-        Post post2 = postRepository.add(new Post(0, "Post2", creationDate, user1, priceHistories)).get();
-        Post post3 = postRepository.add(new Post(0, "Post3", creationDate, user1, priceHistories)).get();
+        var subscribers = Set.of(user1);
+        Post post1 = postRepository.add(Post.builder()
+                .description("Post1")
+                .creationDate(creationDate)
+                .user(user1)
+                .priceHistories(priceHistories)
+                .subscribers(subscribers)
+                .build()
+        ).get();
+        Post post2 = postRepository.add(Post.builder()
+                .description("Post2")
+                .creationDate(creationDate)
+                .user(user1)
+                .priceHistories(priceHistories)
+                .subscribers(subscribers)
+                .build()
+        ).get();
+        Post post3 = postRepository.add(Post.builder()
+                .description("Post3")
+                .creationDate(creationDate)
+                .user(user1)
+                .priceHistories(priceHistories)
+                .subscribers(subscribers)
+                .build()
+        ).get();
 
         var posts = postRepository.findAll();
         assertThat(posts).isEqualTo(List.of(post1, post2, post3));
@@ -94,13 +132,21 @@ class PostRepositoryHbnTest {
         var user1 = userRepository.add(new User(0, "admin", "123")).get();
         var creationDate = now().truncatedTo(ChronoUnit.MINUTES);
         var priceHistory = new PriceHistory(0, 0, 1, creationDate);
-        Post post1 = postRepository.add(new Post(0, "Post1", creationDate, user1, List.of(priceHistory))).get();
+        Post post1 = postRepository.add(Post.builder()
+                .description("Post1")
+                .creationDate(creationDate)
+                .user(user1)
+                .priceHistories(List.of(priceHistory))
+                .subscribers(Set.of(user1))
+                .build()
+        ).get();
 
         var foundPost = postRepository.findById(post1.getId());
         assertThat(foundPost).isPresent();
         assertThat(foundPost.get()).isEqualTo(post1);
         assertThat(foundPost.get().getUser()).isEqualTo(user1);
         assertThat(foundPost.get().getPriceHistories()).asList().contains(priceHistory);
+        assertThat(foundPost.get().getSubscribers()).isEqualTo(Set.of(user1));
 
         var notFoundedPost = postRepository.findById(0);
         assertThat(notFoundedPost).isEmpty();
@@ -111,12 +157,20 @@ class PostRepositoryHbnTest {
         var user1 = userRepository.add(new User(0, "admin", "123")).get();
         var creationDate = now().truncatedTo(ChronoUnit.MINUTES);
         var priceHistory = new PriceHistory(0, 0, 1, creationDate);
-        Post post1 = postRepository.add(new Post(0, "Post1", creationDate, user1, List.of(priceHistory))).get();
+        Post post1 = postRepository.add(Post.builder()
+                .description("Post1")
+                .creationDate(creationDate)
+                .user(user1)
+                .priceHistories(List.of(priceHistory))
+                .subscribers(Set.of(user1))
+                .build()
+        ).get();
 
         var foundPosts = (List<Post>) postRepository.findByDescription(post1.getDescription());
         assertThat(foundPosts).isEqualTo(List.of(post1));
         assertThat(foundPosts.get(0).getUser()).isEqualTo(user1);
         assertThat(foundPosts.get(0).getPriceHistories()).asList().contains(priceHistory);
+        assertThat(foundPosts.get(0).getSubscribers()).isEqualTo(Set.of(user1));
 
         var notFoundedPosts = postRepository.findByDescription("");
         assertThat(notFoundedPosts).isEqualTo(Collections.emptyList());
@@ -133,7 +187,12 @@ class PostRepositoryHbnTest {
     public void whenDeleteById() {
         var user1 = userRepository.add(new User(0, "admin", "123")).get();
         var creationDate = now().truncatedTo(ChronoUnit.MINUTES);
-        var post1 = postRepository.add(new Post(0, "Post1", creationDate, user1, List.of())).get();
+        Post post1 = postRepository.add(Post.builder()
+                .description("Post1")
+                .creationDate(creationDate)
+                .user(user1)
+                .build()
+        ).get();
 
         var isDelete = postRepository.delete(post1.getId());
         assertThat(isDelete).isTrue();
@@ -142,7 +201,13 @@ class PostRepositoryHbnTest {
         assertThat(notFoundPost).isEmpty();
 
         var priceHistory = new PriceHistory(0, 0, 1, creationDate);
-        var post2 = postRepository.add(new Post(0, "Post2", creationDate, user1, List.of(priceHistory))).get();
+        Post post2 = postRepository.add(Post.builder()
+                .description("Post1")
+                .creationDate(creationDate)
+                .user(user1)
+                .priceHistories(List.of(priceHistory))
+                .build()
+        ).get();
         isDelete = postRepository.delete(post2.getId());
         assertThat(isDelete).isFalse();
     }
@@ -152,7 +217,14 @@ class PostRepositoryHbnTest {
         var user1 = userRepository.add(new User(0, "admin", "123")).get();
         var creationDate = now().truncatedTo(ChronoUnit.MINUTES);
         var priceHistory = new PriceHistory(0, 0, 1, creationDate);
-        Post post1 = postRepository.add(new Post(0, "Post1", creationDate, user1, List.of(priceHistory))).get();
+        Post post1 = postRepository.add(Post.builder()
+                .description("Post1")
+                .creationDate(creationDate)
+                .user(user1)
+                .priceHistories(List.of(priceHistory))
+                .subscribers(Set.of(user1))
+                .build()
+        ).get();
 
         var isDelete = postRepository.delete(post1);
         assertThat(isDelete).isTrue();
