@@ -57,12 +57,13 @@ class PostRepositoryHbnTest {
     public void whenSave() {
         var user1 = userRepository.add(new User(0, "admin", "123")).get();
         var creationDate = now().truncatedTo(ChronoUnit.MINUTES);
-        var priceHistory = new PriceHistory(0, 0, 1, creationDate);
+        var priceHistory1 = new PriceHistory(0, 0, 1, creationDate);
+        var priceHistory2 = new PriceHistory(0, 0, 2, creationDate);
         Optional<Post> post = postRepository.add(Post.builder()
                 .description("Post1")
                 .creationDate(creationDate)
                 .user(user1)
-                .priceHistories(List.of(priceHistory))
+                .priceHistories(List.of(priceHistory1, priceHistory2))
                 .subscribers(Set.of(user1))
                 .build()
         );

@@ -34,7 +34,7 @@ public class Post {
     private User user;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumn(name = "price_history_id")
+    @JoinColumn(name = "post_id")
     private List<PriceHistory> priceHistories = new ArrayList<>();
 
     @ManyToMany(fetch = FetchType.EAGER)
