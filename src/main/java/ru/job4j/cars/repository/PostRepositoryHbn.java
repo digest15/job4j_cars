@@ -44,7 +44,7 @@ public class PostRepositoryHbn implements PostRepository {
     @Override
     public Optional<Post> findById(int id) {
         return crudRepository.optional(
-                "from Post where id = :id",
+                "from Post p left join fetch p.priceHistories left join fetch p.subscribers where p.id = :id",
                 Post.class,
                 Map.of("id", id)
         );
@@ -53,7 +53,7 @@ public class PostRepositoryHbn implements PostRepository {
     @Override
     public Collection<Post> findAll() {
         return crudRepository.query(
-                "from Post",
+                "from Post p left join fetch p.priceHistories left join fetch p.subscribers",
                 Post.class
         );
     }
@@ -61,7 +61,7 @@ public class PostRepositoryHbn implements PostRepository {
     @Override
     public Collection<Post> findByDescription(String key) {
         return crudRepository.query(
-                "from Post where description like :description",
+                "from Post p left join fetch p.priceHistories left join fetch p.subscribers where p.description like :description",
                 Post.class,
                 Map.of("description", key)
         );

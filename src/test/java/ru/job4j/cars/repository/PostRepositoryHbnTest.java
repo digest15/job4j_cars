@@ -75,22 +75,40 @@ class PostRepositoryHbnTest {
     public void whenSaveThenGetSame() {
         var user1 = userRepository.add(new User(0, "admin", "123")).get();
         var creationDate = now().truncatedTo(ChronoUnit.MINUTES);
-        var priceHistory = new PriceHistory(0, 0, 1, creationDate);
+        var priceHistory1 = new PriceHistory(0, 0, 1, creationDate);
+        var priceHistory2 = new PriceHistory(0, 1, 2, creationDate);
         Optional<Post> post = postRepository.add(Post.builder()
                 .description("Post1")
                 .creationDate(creationDate)
                 .user(user1)
-                .priceHistories(List.of(priceHistory))
+                .priceHistories(List.of(priceHistory1, priceHistory2))
                 .subscribers(Set.of(user1))
                 .build()
         );
         Optional<Post> findPost = postRepository.findById(post.get().getId());
 
-        assertThat(findPost.isPresent()).isTrue();
-        assertThat(post).isEqualTo(findPost);
+        assertThat(findPost).isPresent();
+        assertThat(findPost.get()).isEqualTo(post.get());
         assertThat(findPost.get().getUser()).isEqualTo(user1);
-        assertThat(findPost.get().getPriceHistories()).asList().contains(priceHistory);
+        assertThat(findPost.get().getPriceHistories()).asList().contains(priceHistory1, priceHistory2);
         assertThat(findPost.get().getSubscribers()).isEqualTo(Set.of(user1));
+    }
+
+    @Test
+    public void whenSaveWithoutPriceHistoryAndSubscribersThenGetSame() {
+        var user1 = userRepository.add(new User(0, "admin", "123")).get();
+        var creationDate = now().truncatedTo(ChronoUnit.MINUTES);
+        Optional<Post> post = postRepository.add(Post.builder()
+                .description("Post1")
+                .creationDate(creationDate)
+                .user(user1)
+                .build()
+        );
+        Optional<Post> findPost = postRepository.findById(post.get().getId());
+
+        assertThat(findPost).isPresent();
+        assertThat(findPost.get()).isEqualTo(post.get());
+        assertThat(findPost.get().getUser()).isEqualTo(user1);
     }
 
     @Test
