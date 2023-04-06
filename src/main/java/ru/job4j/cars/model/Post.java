@@ -44,4 +44,9 @@ public class Post {
             inverseJoinColumns = {@JoinColumn(name = "user_id")}
     )
     private Set<User> subscribers = new HashSet<>();
+
+    @ManyToOne
+    @JoinColumn(name = "car_id", foreignKey = @ForeignKey(name = "CAR_ID_FK"))
+    private Car car;
+
 }
