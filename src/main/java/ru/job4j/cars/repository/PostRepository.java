@@ -2,6 +2,7 @@ package ru.job4j.cars.repository;
 
 import ru.job4j.cars.model.Post;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -18,4 +19,9 @@ public interface PostRepository {
     Collection<Post> findAll();
 
     Collection<Post> findByDescription(String key);
+
+    Collection<Post> findAllAtDay(LocalDateTime dateTime);
+
+    Collection<Post> findByCarName(String carName);
+
 }

@@ -162,7 +162,7 @@ class PostRepositoryHbnTest {
     public void whenSaveSeveralThenGetAll() {
         var user1 = userRepository.add(new User(0, "admin", "123")).get();
         var creationDate = now().truncatedTo(ChronoUnit.MINUTES);
-        var priceHistories = List.of(new PriceHistory(0, 0, 1, creationDate));
+        var priceHistory = new PriceHistory(0, 0, 1, creationDate);
         var subscribers = Set.of(user1);
         var owner1 = ownerRepository.add(new Owner(0, "Owner1", user1)).get();
 
@@ -172,7 +172,7 @@ class PostRepositoryHbnTest {
                 .description("Post1")
                 .creationDate(creationDate)
                 .user(user1)
-                .priceHistories(priceHistories)
+                .priceHistories(List.of(priceHistory))
                 .subscribers(subscribers)
                 .car(car1)
                 .build()
@@ -184,7 +184,7 @@ class PostRepositoryHbnTest {
                 .description("Post2")
                 .creationDate(creationDate)
                 .user(user1)
-                .priceHistories(priceHistories)
+                .priceHistories(List.of(priceHistory))
                 .subscribers(subscribers)
                 .car(car2)
                 .build()
@@ -196,7 +196,7 @@ class PostRepositoryHbnTest {
                 .description("Post3")
                 .creationDate(creationDate)
                 .user(user1)
-                .priceHistories(priceHistories)
+                .priceHistories(List.of(priceHistory))
                 .subscribers(subscribers)
                 .car(car3)
                 .build()
@@ -296,6 +296,97 @@ class PostRepositoryHbnTest {
 
         var notFoundedPosts = postRepository.findByDescription("");
         assertThat(notFoundedPosts).isEqualTo(Collections.emptyList());
+    }
+
+    @Test
+    public void whenFindAllAtDay() {
+        var user1 = userRepository.add(new User(0, "admin", "123")).get();
+        var creationDate = now().truncatedTo(ChronoUnit.MINUTES);
+        var priceHistory = new PriceHistory(0, 0, 1, creationDate);
+        var priceHistories = List.of(priceHistory);
+        var subscribers = Set.of(user1);
+        var owner1 = ownerRepository.add(new Owner(0, "Owner1", user1)).get();
+
+        var creationDate1 = now().truncatedTo(ChronoUnit.MINUTES).minusDays(2);
+        var engine1 = engineRepository.add(new Engine(0, "Engine1")).get();
+        var car1 = carRepository.add(new Car(0, "Car1", engine1, Set.of(owner1))).get();
+        Post post1 = postRepository.add(Post.builder()
+                .description("Post1")
+                .creationDate(creationDate1)
+                .user(user1)
+                .priceHistories(priceHistories)
+                .subscribers(subscribers)
+                .car(car1)
+                .build()
+        ).get();
+
+        var creationDate2 = now().truncatedTo(ChronoUnit.MINUTES);
+        var engine2 = engineRepository.add(new Engine(0, "Engine2")).get();
+        var car2 = carRepository.add(new Car(0, "Car2", engine2, Set.of(owner1))).get();
+        Post post2 = postRepository.add(Post.builder()
+                .description("Post2")
+                .creationDate(creationDate)
+                .user(user1)
+                .priceHistories(priceHistories)
+                .subscribers(subscribers)
+                .car(car2)
+                .build()
+        ).get();
+
+        var creationDate3 = now().truncatedTo(ChronoUnit.MINUTES);
+        var engine3 = engineRepository.add(new Engine(0, "Engine3")).get();
+        var car3 = carRepository.add(new Car(0, "Car3", engine3, Set.of(owner1))).get();
+        Post post3 = postRepository.add(Post.builder()
+                .description("Post3")
+                .creationDate(creationDate3)
+                .user(user1)
+                .priceHistories(priceHistories)
+                .subscribers(subscribers)
+                .car(car3)
+                .build()
+        ).get();
+
+        var foundPosts = (List<Post>) postRepository.findAllAtDay(now());
+        assertThat(foundPosts).isEqualTo(List.of(post2, post3));
+    }
+
+    @Test
+    public void whenFindByCarName() {
+        var user1 = userRepository.add(new User(0, "admin", "123")).get();
+        var creationDate = now().truncatedTo(ChronoUnit.MINUTES);
+        var priceHistory = new PriceHistory(0, 0, 1, creationDate);
+        var priceHistories = List.of(priceHistory);
+        var subscribers = Set.of(user1);
+        var owner1 = ownerRepository.add(new Owner(0, "Owner1", user1)).get();
+
+        var creationDate1 = now().truncatedTo(ChronoUnit.MINUTES).minusDays(2);
+        var engine1 = engineRepository.add(new Engine(0, "Engine1")).get();
+        var car1 = carRepository.add(new Car(0, "Car1", engine1, Set.of(owner1))).get();
+        Post post1 = postRepository.add(Post.builder()
+                .description("Post1")
+                .creationDate(creationDate1)
+                .user(user1)
+                .priceHistories(priceHistories)
+                .subscribers(subscribers)
+                .car(car1)
+                .build()
+        ).get();
+
+        var creationDate2 = now().truncatedTo(ChronoUnit.MINUTES);
+        var engine2 = engineRepository.add(new Engine(0, "Engine2")).get();
+        var car2 = carRepository.add(new Car(0, "Car2", engine2, Set.of(owner1))).get();
+        Post post2 = postRepository.add(Post.builder()
+                .description("Post2")
+                .creationDate(creationDate)
+                .user(user1)
+                .priceHistories(priceHistories)
+                .subscribers(subscribers)
+                .car(car2)
+                .build()
+        ).get();
+
+        var foundPosts = (List<Post>) postRepository.findByCarName("Car2");
+        assertThat(foundPosts).isEqualTo(List.of(post2));
     }
 
     @Test

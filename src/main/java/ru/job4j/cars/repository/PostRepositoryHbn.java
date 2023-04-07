@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 import ru.job4j.cars.model.Post;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
@@ -64,6 +66,28 @@ public class PostRepositoryHbn implements PostRepository {
                 "from Post p left join fetch p.priceHistories left join fetch p.subscribers where p.description like :description",
                 Post.class,
                 Map.of("description", key)
+        );
+    }
+
+    @Override
+    public Collection<Post> findAllAtDay(LocalDateTime dateTime) {
+        LocalDateTime startOfDay = dateTime.truncatedTo(ChronoUnit.DAYS);
+        return crudRepository.query(
+                "from Post p left join fetch p.priceHistories left join fetch p.subscribers where p.creationDate >= :startOfDay and p.creationDate < :endOfDay",
+                Post.class,
+                Map.of(
+                        "startOfDay", startOfDay,
+                        "endOfDay", startOfDay.plusDays(1)
+                )
+        );
+    }
+
+    @Override
+    public Collection<Post> findByCarName(String carName) {
+        return crudRepository.query(
+                "from Post p left join fetch p.priceHistories left join fetch p.subscribers where p.car.name = :carName",
+                Post.class,
+                Map.of("carName", carName)
         );
     }
 }
