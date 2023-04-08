@@ -49,4 +49,8 @@ public class Post {
     @JoinColumn(name = "car_id", foreignKey = @ForeignKey(name = "CAR_ID_FK"))
     private Car car;
 
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id")
+    private Set<File> photos = new HashSet<>();
+
 }

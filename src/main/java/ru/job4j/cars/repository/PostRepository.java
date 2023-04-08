@@ -20,7 +20,7 @@ public interface PostRepository {
 
     Collection<Post> findByDescription(String key);
 
-    Collection<Post> findAllAtDay(LocalDateTime dateTime);
+    Collection<Post> findAllByCreationDateLaterDate(LocalDateTime date);
 
     Collection<Post> findByCarName(String carName);
 

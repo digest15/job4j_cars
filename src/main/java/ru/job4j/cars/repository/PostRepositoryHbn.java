@@ -45,8 +45,13 @@ public class PostRepositoryHbn implements PostRepository {
 
     @Override
     public Optional<Post> findById(int id) {
-        return crudRepository.optional(
-                "from Post p left join fetch p.priceHistories left join fetch p.subscribers where p.id = :id",
+        return crudRepository.optional("""
+                            from Post p 
+                                left join fetch p.priceHistories
+                                left join fetch p.subscribers 
+                                left join fetch p.photos
+                            where p.id = :id
+                        """,
                 Post.class,
                 Map.of("id", id)
         );
@@ -70,15 +75,11 @@ public class PostRepositoryHbn implements PostRepository {
     }
 
     @Override
-    public Collection<Post> findAllAtDay(LocalDateTime dateTime) {
-        LocalDateTime startOfDay = dateTime.truncatedTo(ChronoUnit.DAYS);
+    public Collection<Post> findAllByCreationDateLaterDate(LocalDateTime date) {
         return crudRepository.query(
-                "from Post p left join fetch p.priceHistories left join fetch p.subscribers where p.creationDate >= :startOfDay and p.creationDate < :endOfDay",
+                "from Post p left join fetch p.priceHistories left join fetch p.subscribers where p.creationDate >= :startOfDay",
                 Post.class,
-                Map.of(
-                        "startOfDay", startOfDay,
-                        "endOfDay", startOfDay.plusDays(1)
-                )
+                Map.of("startOfDay", date.truncatedTo(ChronoUnit.DAYS))
         );
     }
 

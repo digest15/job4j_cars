@@ -11,13 +11,9 @@ import org.junit.jupiter.api.Test;
 import ru.job4j.cars.model.*;
 
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static java.time.LocalDateTime.now;
-import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 class PostRepositoryHbnTest {
@@ -32,6 +28,8 @@ class PostRepositoryHbnTest {
 
     private static OwnerRepository ownerRepository;
 
+    private static FileRepository fileRepository;
+
     private static SessionFactory sessionFactory;
 
     @BeforeAll
@@ -45,6 +43,7 @@ class PostRepositoryHbnTest {
         engineRepository = new EngineRepositoryHbn(crudRepository);
         carRepository = new CarRepositoryHbn(crudRepository);
         postRepository = new PostRepositoryHbn(crudRepository);
+        fileRepository = new FileRepositoryHbn(crudRepository);
     }
 
     @AfterAll
@@ -64,6 +63,8 @@ class PostRepositoryHbnTest {
                 .forEach(owner -> ownerRepository.delete(owner));
         userRepository.findAll()
                 .forEach(task -> userRepository.delete(task));
+        fileRepository.findAll()
+                .forEach(file -> fileRepository.delete(file));
     }
 
     @Test
@@ -114,6 +115,8 @@ class PostRepositoryHbnTest {
         var owner1 = ownerRepository.add(new Owner(0, "Owner1", user1)).get();
         var engine1 = engineRepository.add(new Engine(0, "Engine1")).get();
         var car1 = carRepository.add(new Car(0, "Car1", engine1, Set.of(owner1))).get();
+        var file1 = fileRepository.save(new File(0, "file1", "/file1.jpeg")).get();
+        var file2 = fileRepository.save(new File(0, "file2", "/file2.jpeg")).get();
 
         var creationDate = now().truncatedTo(ChronoUnit.MINUTES);
         var priceHistory1 = new PriceHistory(0, 0, 1, creationDate);
@@ -125,8 +128,10 @@ class PostRepositoryHbnTest {
                 .priceHistories(List.of(priceHistory1, priceHistory2))
                 .subscribers(Set.of(user1))
                 .car(car1)
+                .photos(Set.of(file1, file2))
                 .build()
         );
+
         Optional<Post> findPost = postRepository.findById(post.get().getId());
 
         assertThat(findPost).isPresent();
@@ -134,6 +139,7 @@ class PostRepositoryHbnTest {
         assertThat(findPost.get().getUser()).isEqualTo(user1);
         assertThat(findPost.get().getPriceHistories()).asList().contains(priceHistory1, priceHistory2);
         assertThat(findPost.get().getSubscribers()).isEqualTo(Set.of(user1));
+        assertThat(findPost.get().getPhotos()).isEqualTo(Set.of(file1, file2));
     }
 
     @Test
@@ -165,6 +171,8 @@ class PostRepositoryHbnTest {
         var priceHistory = new PriceHistory(0, 0, 1, creationDate);
         var subscribers = Set.of(user1);
         var owner1 = ownerRepository.add(new Owner(0, "Owner1", user1)).get();
+        var file1 = fileRepository.save(new File(0, "file1", "/file1.jpeg")).get();
+        var file2 = fileRepository.save(new File(0, "file2", "/file2.jpeg")).get();
 
         var engine1 = engineRepository.add(new Engine(0, "Engine1")).get();
         var car1 = carRepository.add(new Car(0, "Car1", engine1, Set.of(owner1))).get();
@@ -175,6 +183,7 @@ class PostRepositoryHbnTest {
                 .priceHistories(List.of(priceHistory))
                 .subscribers(subscribers)
                 .car(car1)
+                .photos(Set.of(file1, file2))
                 .build()
         ).get();
 
@@ -187,6 +196,7 @@ class PostRepositoryHbnTest {
                 .priceHistories(List.of(priceHistory))
                 .subscribers(subscribers)
                 .car(car2)
+                .photos(Set.of(file1, file2))
                 .build()
         ).get();
 
@@ -199,6 +209,7 @@ class PostRepositoryHbnTest {
                 .priceHistories(List.of(priceHistory))
                 .subscribers(subscribers)
                 .car(car3)
+                .photos(Set.of(file1, file2))
                 .build()
         ).get();
 
@@ -346,7 +357,7 @@ class PostRepositoryHbnTest {
                 .build()
         ).get();
 
-        var foundPosts = (List<Post>) postRepository.findAllAtDay(now());
+        var foundPosts = (List<Post>) postRepository.findAllByCreationDateLaterDate(now());
         assertThat(foundPosts).isEqualTo(List.of(post2, post3));
     }
 
