@@ -46,14 +46,12 @@ public class PostRepositoryHbn implements PostRepository {
     @Override
     public Optional<Post> findById(int id) {
         return crudRepository.optional("""
-                            from Post p 
-                                left join fetch p.priceHistories
-                                left join fetch p.subscribers 
-                                left join fetch p.photos
+                            from Post p
                             where p.id = :id
                         """,
                 Post.class,
-                Map.of("id", id)
+                Map.of("id", id),
+                "post-graph"
         );
     }
 

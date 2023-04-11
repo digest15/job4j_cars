@@ -15,6 +15,24 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@NamedEntityGraph(
+        name = "post-graph",
+        attributeNodes = {
+                @NamedAttributeNode("priceHistories"),
+                @NamedAttributeNode("subscribers"),
+                @NamedAttributeNode("photos"),
+                @NamedAttributeNode(value = "car", subgraph = "user-subgraph")
+        },
+        subgraphs = {
+                @NamedSubgraph(
+                        name = "user-subgraph",
+                        attributeNodes = {
+                                @NamedAttributeNode("engine"),
+                                @NamedAttributeNode("owners")
+                        }
+                )
+        }
+)
 @Entity
 @Table(name = "auto_post")
 public class Post {

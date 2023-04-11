@@ -117,6 +117,7 @@ class PostRepositoryHbnTest {
         var car1 = carRepository.add(new Car(0, "Car1", engine1, Set.of(owner1))).get();
         var file1 = fileRepository.save(new File(0, "file1", "/file1.jpeg")).get();
         var file2 = fileRepository.save(new File(0, "file2", "/file2.jpeg")).get();
+        var file3 = fileRepository.save(new File(0, "file3", "/file3.jpeg")).get();
 
         var creationDate = now().truncatedTo(ChronoUnit.MINUTES);
         var priceHistory1 = new PriceHistory(0, 0, 1, creationDate);
@@ -128,7 +129,7 @@ class PostRepositoryHbnTest {
                 .priceHistories(List.of(priceHistory1, priceHistory2))
                 .subscribers(Set.of(user1))
                 .car(car1)
-                .photos(Set.of(file1, file2))
+                .photos(Set.of(file1, file2, file3))
                 .build()
         );
 
@@ -139,7 +140,8 @@ class PostRepositoryHbnTest {
         assertThat(findPost.get().getUser()).isEqualTo(user1);
         assertThat(findPost.get().getPriceHistories()).asList().contains(priceHistory1, priceHistory2);
         assertThat(findPost.get().getSubscribers()).isEqualTo(Set.of(user1));
-        assertThat(findPost.get().getPhotos()).isEqualTo(Set.of(file1, file2));
+        assertThat(findPost.get().getPhotos()).isEqualTo(Set.of(file1, file2, file3));
+        assertThat(findPost.get().getCar()).isEqualTo(car1);
     }
 
     @Test

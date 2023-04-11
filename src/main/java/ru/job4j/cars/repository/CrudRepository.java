@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.graph.RootGraph;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -42,6 +43,20 @@ public class CrudRepository {
             for (Map.Entry<String, Object> arg : args.entrySet()) {
                 sq.setParameter(arg.getKey(), arg.getValue());
             }
+            return sq.uniqueResultOptional();
+        };
+        return tx(command);
+    }
+
+    public <T> Optional<T> optional(String query, Class<T> cl, Map<String, Object> args, String entityGraphName) {
+        Function<Session, Optional<T>> command = session -> {
+            RootGraph<?> entityGraph = session.getEntityGraph(entityGraphName);
+            var sq = session
+                    .createQuery(query, cl);
+            for (Map.Entry<String, Object> arg : args.entrySet()) {
+                sq.setParameter(arg.getKey(), arg.getValue());
+            }
+            sq.setHint("javax.persistence.loadgraph", entityGraph);
             return sq.uniqueResultOptional();
         };
         return tx(command);
